@@ -41,5 +41,4 @@ class tests(object):
     '''
     tests config. describe expected reults
     '''
-    
-    
+    pass
