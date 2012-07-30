@@ -17,18 +17,17 @@ class ipmi(object):
     '''
     ipmi configuration
     '''
-
-    bmnodes = 
-    [
+    
+    bmnodes = [
         {
-        'name':            'bm4'
+        'name':            'bm4',
         'ipmi_host':       'mc0n4-kha-ipmi.kha.mirantis.net',
         'ipmi_username':   'engineer',
         'ipmi_password':   'zu3aeZ1a',
         'eth0_mac' :       '00:25:90:68:7D:B8',
         },
         {
-        'name':            'bm5'
+        'name':            'bm5',
         'ipmi_host':       'mc0n5-kha-ipmi.kha.mirantis.net',
         'ipmi_username':   'engineer',
         'ipmi_password':   'zu3aeZ1a',

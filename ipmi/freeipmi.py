@@ -2,60 +2,57 @@
 
 from common import PowerManagerCommon
 
-import utils
+import os
 
 
 class FreeIPMIPowerManager(PowerManagerCommon):
-    """External commands used:
+    """
+    FreeIPMI wrapper
+    """
 
-ipmi-chassis-config -h 10.5.43.111 -u root -p root -c -e Chassis_Boot_Flags:Boot_Device=HARD-DRIVE
-ipmi-chassis -h 10.5.43.113 -u root -p root --chassis-control=POWER-CYCLE
-"""
+    def __init__():
+        pass 
+    
+    def power_status(self, ipmi_host, ipmi_username, ipmi_password):
+        command = " ".join("ipmi-chassis ",
+                               "-h", ipmi_host,
+                               "-u", ipmi_username,
+                               "-p", ipmi_password,
+                               "--get-chassis-status | grep 'System Power' | cut -d ':' -f2")
 
-    def __init__(self, *args, **kwargs):
-        self._host = kwargs['host']
-        self._username = kwargs['username']
-        self._password = kwargs['password']
+#===============================================================================
+#    def power_on(self):
+#        command = " ".join("$(ipmi-chassis ",
+#                               "-h", ipmi_host,
+#                               "-u", ipmi_username,
+#                               "-p", ipmi_password,
+#                               "--get-chassis-status | grep 'System Power' | cut -d ':' -f2)")
+# 
+#    def power_off(self):
+#        command = " ".join("$(ipmi-chassis ",
+#                               "-h", ipmi_host,
+#                               "-u", ipmi_username,
+#                               "-p", ipmi_password,
+#                               "--get-chassis-status | grep 'System Power' | cut -d ':' -f2)")
+# 
+#    def reboot(self, hard=False):
+#        return self._execute('control', ['--chassis-control=POWER-CYCLE'])
+# 
+#    def set_boot_device(self, device):
+#        assert device in ('pxe', 'disk')
+#        device_map = {"pxe": "PXE", "disk": "HARD-DRIVE"}
+# 
+#        return self._execute("config", ["-c", "-e",
+#            "Chassis_Boot_Flags:Boot_Device=%s" % device_map[device]])
+#===============================================================================
 
-        self._cmd_prefix = {}
-        self._cmd_prefix["config"] = \
-            ('/usr/sbin/ipmi-chassis-config -h %s -u %s -p %s ' % \
-                (self._host, self._username, self._password))
-        self._cmd_prefix["control"] = \
-            ('/usr/sbin/ipmi-chassis -h %s -u %s -p %s ' % \
-                (self._host, self._username, self._password))
-
-    def _execute(self, cmdtype, command):
-        cmd = self._cmd_prefix[cmdtype] + ' '.join(command)
-        return utils.execute(cmd, shell=True)
-
-    def power_status(self):
-        output, _ = self._execute("control", ["--get-chassis-status"])
-
-        return output.split("\n")[0].split(":")[-1].strip()
-
-    def power_on(self):
-        return self._execute('control', ['--chassis-control=POWER-UP'])
-
-    def power_off(self):
-        return self._execute('control', ['--chassis-control=POWER-DOWN'])
-
-    def reboot(self, hard=False):
-        return self._execute('control', ['--chassis-control=POWER-CYCLE'])
-
-    def set_boot_device(self, device):
-        assert device in ('pxe', 'disk')
-        device_map = {"pxe": "PXE", "disk": "HARD-DRIVE"}
-
-        return self._execute("config", ["-c", "-e",
-            "Chassis_Boot_Flags:Boot_Device=%s" % device_map[device]])
-
+def chk_power():
+    from etc import config
+    
+    pm = FreeIPMIPowerManager()
+    for h in config.ipmi.bmnodes:
+        print h['name'],
+        pm.power_status(h['ipmi_host'], h['ipmi_username'], h['ipmi_password'])
 
 if __name__ == "__main__":
-    import sys
-
-    powermgr = FreeIPMIPowerManager(host='10.5.43.113', username='root',
-            password='root')
-    print powermgr.power_status()
-    powermgr.set_boot_device(sys.argv[1])
-    powermgr.reboot()
+    chk_power()
